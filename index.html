@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Network Security Lab Internal Exam — Program-Wise Hub</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom scrollbar for code blocks */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(71, 85, 105, 0.8);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 1);
+    }
+    .blank-input {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px dashed #38bdf8;
+      color: #38bdf8;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+    .blank-input:focus {
+      border-style: solid;
+      background: rgba(15, 23, 42, 1);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+    .blank-input.correct {
+      border-color: #22c55e;
+      border-style: solid;
+      color: #4ade80;
+      background: rgba(20, 83, 45, 0.35);
+    }
+    .blank-input.incorrect {
+      border-color: #ef4444;
+      border-style: solid;
+      color: #f87171;
+      background: rgba(127, 29, 29, 0.35);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 bg-indigo-600 text-white px-4 py-2.5 rounded-xl shadow-xl border border-indigo-400/30 flex items-center gap-2.5 text-sm font-medium">
+    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span id="toastMessage">Copied to clipboard!</span>
+  </div>
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 font-bold text-white text-lg">
+          NS
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">NS Lab Internal Exam Hub</h1>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">6 Programs</span>
+          </div>
+          <p class="text-xs text-slate-400">Program-wise exact source code, live output simulator &amp; quick exam revision</p>
+        </div>
+      </div>
+
+      <!-- Progress & Global Actions -->
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/70 rounded-lg px-3 py-1.5">
+          <span class="text-xs text-slate-300 font-medium">Revised:</span>
+          <span id="progressText" class="text-xs font-bold text-indigo-400">0 / 6</span>
+          <div class="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700">
+          <button id="viewSingleBtn" type="button" class="px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white shadow transition">
+            Program-Wise View
+          </button>
+          <button id="viewAllBtn" type="button" class="px-3 py-1.5 text-xs font-medium rounded-md text-slate-300 hover:text-white transition">
+            All Programs Sheet
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter & Search Bar -->
+  <section class="bg-slate-900/50 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Language Filter Pills -->
+      <div class="flex items-center gap-1.5 flex-wrap" id="langFilterGroup">
+        <button type="button" data-lang="all" class="lang-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition">
+          All Programs (6)
+        </button>
+        <button type="button" data-lang="C" class="lang-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          C Programs (3)
+        </button>
+        <button type="button" data-lang="Java" class="lang-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+          Java Programs (3)
+        </button>
+      </div>
+
+      <!-- Search Input & Copy All -->
+      <div class="flex items-center gap-2 flex-1 sm:flex-initial justify-end min-w-[240px]">
+        <div class="relative flex-1 sm:w-64">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input id="searchInput" type="text" placeholder="Search program (e.g. RSA, DES, SHA, Caesar)..." class="w-full pl-9 pr-7 py-1.5 bg-slate-800/90 border border-slate-700 rounded-lg text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition" />
+          <button id="clearSearchBtn" type="button" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs">✕</button>
+        </div>
+        <button id="copyAllProgramsBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shrink-0">
+          <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          Copy All 6
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace Container -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 flex-1">
+
+    <!-- Program Selector Strip (Always visible in Program-Wise View) -->
+    <div id="programPillsContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-6">
+      <!-- Populated dynamically by JS -->
+    </div>
+
+    <!-- Empty Search State -->
+    <div id="emptySearchState" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center my-6">
+      <p class="text-slate-300 font-semibold text-base mb-1">No matching programs found</p>
+      <p class="text-slate-400 text-xs mb-4">Try clearing your search filter or switching the language tab.</p>
+      <button id="resetFiltersBtn" type="button" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition">
+        Show All 6 Programs
+      </button>
+    </div>
+
+    <!-- VIEW 1: SINGLE PROGRAM-WISE WORKBENCH -->
+    <div id="singleProgramView" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left/Main Column: Code Viewer & Practice Mode (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <!-- Program Header Bar -->
+          <div class="px-4 sm:px-5 py-4 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span id="activeProgNumber" class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Program #1</span>
+                <span id="activeProgLangBadge" class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">C Program</span>
+                <span id="activeProgFile" class="text-xs font-mono text-slate-400">caesar.c</span>
+              </div>
+              <h2 id="activeProgTitle" class="text-lg sm:text-xl font-bold text-white mt-1">CAESAR CIPHER (c prog)</h2>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button id="markRevisedBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5">
+                <span id="markRevisedIcon">○</span>
+                <span id="markRevisedText">Mark Revised</span>
+              </button>
+
+              <button id="copyActiveCodeBtn" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow transition flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                <span>Copy Code</span>
+              </button>
+
+              <button id="downloadActiveCodeBtn" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition" title="Download Source File">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Code Toolbar: Format Toggle, Line Numbers, Memorize Mode -->
+          <div class="px-4 sm:px-5 py-2.5 bg-slate-950/60 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-slate-400 font-medium">Code Style:</span>
+              <div class="inline-flex rounded-lg bg-slate-800/90 p-0.5 border border-slate-700">
+                <button id="fmtExactBtn" type="button" class="px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition">
+                  Exact PDF
+                </button>
+                <button id="fmtCleanBtn" type="button" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white transition">
+                  Indented
+                </button>
+                <button id="fmtPracticeBtn" type="button" class="px-2.5 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white transition">
+                  Fill-in-Blanks
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-1.5 text-slate-300 cursor-pointer select-none">
+                <input id="lineNumbersToggle" type="checkbox" checked class="rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-0" />
+                <span>Line #</span>
+              </label>
+              <span id="lineCountBadge" class="text-slate-400 font-mono">32 lines</span>
+            </div>
+          </div>
+
+          <!-- Fill-in-the-blanks Helper Bar (Visible only in Practice Mode) -->
+          <div id="practiceToolbar" class="hidden px-4 sm:px-5 py-2.5 bg-indigo-950/40 border-b border-indigo-500/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="text-indigo-200">
+              <span class="font-semibold">Exam Memory Test:</span> Fill in the key formulas/functions from the PDF code.
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="checkBlanksBtn" type="button" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition">
+                Check Answers
+              </button>
+              <button id="revealBlanksBtn" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition">
+                Reveal All
+              </button>
+              <button id="resetBlanksBtn" type="button" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Code Display Container -->
+          <div id="codeDisplayArea" class="p-4 sm:p-5 bg-slate-950 overflow-x-auto text-sm leading-relaxed font-mono">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Prev / Next Navigation Footer -->
+          <div class="px-4 sm:px-5 py-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between">
+            <button id="prevProgBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+              <span>← Previous Program</span>
+            </button>
+            <span id="progPositionIndicator" class="text-xs text-slate-400 font-medium">1 of 6</span>
+            <button id="nextProgBtn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+              <span>Next Program →</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Simulator, Execution Commands & Exam Viva Notes (5 cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-4">
+
+        <!-- Interactive Terminal Output Simulator -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <h3 class="text-sm font-bold text-white">Live Program Output Simulator</h3>
+            </div>
+            <button id="runSimBtn" type="button" class="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1">
+              <span>▶ Run Program</span>
+            </button>
+          </div>
+
+          <div class="p-4 space-y-3">
+            <p class="text-xs text-slate-400">Test inputs below to see the exact console output produced by this program during your lab execution:</p>
+
+            <!-- Dynamic Simulator Inputs -->
+            <div id="simInputsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <!-- Populated by JS -->
+            </div>
+
+            <!-- Simulated Terminal Output Window -->
+            <div class="mt-3 rounded-xl bg-black/90 border border-slate-800 p-3.5 font-mono text-xs text-emerald-400 overflow-x-auto">
+              <div class="flex items-center justify-between text-[11px] text-slate-400 pb-2 mb-2 border-b border-slate-800/80">
+                <span id="simTerminalHeader">terminal — ./caesar</span>
+                <span>stdout</span>
+              </div>
+              <pre id="simOutputPre" class="whitespace-pre-wrap break-words leading-relaxed text-slate-100"></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compile & Run Terminal Commands -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Lab Terminal Compile &amp; Run</h3>
+            <button id="copyCompileCmdBtn" type="button" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">Copy Command</button>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-cyan-300 overflow-x-auto">
+            <code id="compileCmdText">gcc caesar.c -o caesar &amp;&amp; ./caesar</code>
+          </div>
+        </div>
+
+        <!-- Key Formulas & Exam Checkpoints -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Exam Quick-Recall &amp; Key Logic</h3>
+          <div id="examNotesContainer" class="space-y-2 text-xs text-slate-200">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW 2: ALL PROGRAMS SHEET (Side-by-side / Printable / Quick Copy) -->
+    <div id="allProgramsView" class="hidden space-y-6">
+      <!-- Populated by JS -->
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-900/40 mt-10 py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+      <span>Source: Attached <strong class="text-slate-300">ns lab 2.pdf</strong> (Pages 1–5, all 6 programs verified verbatim)</span>
+      <span>Tip: Press <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono">←</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono">→</kbd> to switch programs</span>
+    </div>
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 1. EXACT VERBATIM PROGRAM DATA FROM "ns lab 2.pdf" (Pages 1 to 5)
+    // =========================================================================
+    const PROGRAMS = [
+      {
+        id: 'caesar',
+        number: 1,
+        pdfPage: 1,
+        shortName: 'Caesar Cipher',
+        title: 'CAESAR CIPHER (c prog)',
+        language: 'C',
+        filename: 'caesar.c',
+        compileCmd: 'gcc caesar.c -o caesar && ./caesar',
+        exactCode: `#include <stdio.h>
+#include <string.h>
+void encrypt(char text[], int shift)
+{
+ int i; shift = (shift % 26 + 26) % 26;
+ for(i=0; text[i]!='\\0'; i++)
+{
+ if(text[i]>='a' && text[i]<='z')
+ text[i] = (text[i]-'a'+shift)%26+'a';
+ else if(text[i]>='A' && text[i]<='Z')
+ text[i] = (text[i]-'A'+shift)%26+'A';
+}
+}
+void decrypt(char text[], int shift)
+{ encrypt(text, 26-(shift%26)); }
+int main()
+{
+ char text[100];
+int shift;
+ printf("Enter a message to encrypt: ");
+ fgets(text, sizeof(text), stdin);
+ text[strcspn(text, "\\n")] = '\\0';
+ printf("Enter shift amount: ");
+scanf("%d", &shift);
+ encrypt(text, shift);
+printf("Encrypted message: %s\\n", text);
+ decrypt(text, shift);
+printf("Decrypted message: %s\\n", text);
+return 0;
+}`,
+        cleanCode: `#include <stdio.h>
+#include <string.h>
+
+void encrypt(char text[], int shift)
+{
+    int i;
+    shift = (shift % 26 + 26) % 26;
+    for (i = 0; text[i] != '\\0'; i++)
+    {
+        if (text[i] >= 'a' && text[i] <= 'z')
+            text[i] = (text[i] - 'a' + shift) % 26 + 'a';
+        else if (text[i] >= 'A' && text[i] <= 'Z')
+            text[i] = (text[i] - 'A' + shift) % 26 + 'A';
+    }
+}
+
+void decrypt(char text[], int shift)
+{
+    encrypt(text, 26 - (shift % 26));
+}
+
+int main()
+{
+    char text[100];
+    int shift;
+    printf("Enter a message to encrypt: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\\n")] = '\\0';
+    printf("Enter shift amount: ");
+    scanf("%d", &shift);
+    encrypt(text, shift);
+    printf("Encrypted message: %s\\n", text);
+    decrypt(text, shift);
+    printf("Decrypted message: %s\\n", text);
+    return 0;
+}`,
+        blanks: [
+          { token: "(shift % 26 + 26) % 26", hint: "normalize shift" },
+          { token: "(text[i]-'a'+shift)%26+'a'", hint: "lowercase shift formula" },
+          { token: "26-(shift%26)", hint: "reverse shift for decrypt" },
+          { token: "strcspn(text, \"\\n\")", hint: "strip newline" }
+        ],
+        notes: [
+          "Headers required: <stdio.h> and <string.h> (for strcspn).",
+          "Encryption formula: (text[i] - 'a' + shift) % 26 + 'a' for lowercase and 'A' for uppercase.",
+          "Decryption reuses encrypt() by passing 26 - (shift % 26) as the shift value.",
+          "fgets() reads spaces safely, and text[strcspn(text, \"\\n\")] = '\\0' removes the trailing newline."
+        ],
+        simFields: [
+          { id: 'msg', label: 'Message to encrypt', type: 'text', defaultValue: 'HelloWorld' },
+          { id: 'shift', label: 'Shift amount', type: 'number', defaultValue: '3' }
+        ]
+      },
+      {
+        id: 'diffie',
+        number: 2,
+        pdfPage: 2,
+        shortName: 'Diffie-Hellman',
+        title: 'DIFFIE HELLMAN (c prog)',
+        language: 'C',
+        filename: 'diffie_hellman.c',
+        compileCmd: 'gcc diffie_hellman.c -o diffie_hellman && ./diffie_hellman',
+        exactCode: `#include <stdio.h>
+int power(int a, int b, int p)
+{
+ int result = 1, i;
+ for(i=0; i<b; i++)
+ result = (result * a) % p;
+ return result;
+}
+int main()
+{
+ int p, g, a, b, x, y, ka, kb;
+ printf("Enter prime number p: ");
+ scanf("%d", &p);
+ printf("Enter primitive root g: ");
+ scanf("%d", &g);
+ printf("Enter private key of User A: ");
+ scanf("%d", &a);
+ printf("Enter private key of User B: ");
+ scanf("%d", &b);
+ x = power(g, a, p);
+ y = power(g, b, p);
+ printf("\\nPublic key of User A: %d", x);
+ printf("\\nPublic key of User B: %d", y);
+ printf("\\n\\nUser A sends public key %d to User B", x);
+ printf("\\nUser B sends public key %d to User A", y);
+ ka = power(y, a, p);
+ kb = power(x, b, p);
+ printf("\\n\\nSecret key of User A: %d", ka);
+ printf("\\nSecret key of User B: %d\\n", kb);
+ return 0;
+}`,
+        cleanCode: `#include <stdio.h>
+
+int power(int a, int b, int p)
+{
+    int result = 1, i;
+    for (i = 0; i < b; i++)
+        result = (result * a) % p;
+    return result;
+}
+
+int main()
+{
+    int p, g, a, b, x, y, ka, kb;
+    printf("Enter prime number p: ");
+    scanf("%d", &p);
+    printf("Enter primitive root g: ");
+    scanf("%d", &g);
+    printf("Enter private key of User A: ");
+    scanf("%d", &a);
+    printf("Enter private key of User B: ");
+    scanf("%d", &b);
+
+    x = power(g, a, p);
+    y = power(g, b, p);
+
+    printf("\\nPublic key of User A: %d", x);
+    printf("\\nPublic key of User B: %d", y);
+    printf("\\n\\nUser A sends public key %d to User B", x);
+    printf("\\nUser B sends public key %d to User A", y);
+
+    ka = power(y, a, p);
+    kb = power(x, b, p);
+
+    printf("\\n\\nSecret key of User A: %d", ka);
+    printf("\\nSecret key of User B: %d\\n", kb);
+    return 0;
+}`,
+        blanks: [
+          { token: "result = (result * a) % p;", hint: "modular exponentiation step" },
+          { token: "x = power(g, a, p);", hint: "User A public key" },
+          { token: "y = power(g, b, p);", hint: "User B public key" },
+          { token: "ka = power(y, a, p);", hint: "User A shared secret" },
+          { token: "kb = power(x, b, p);", hint: "User B shared secret" }
+        ],
+        notes: [
+          "Only requires <stdio.h>. Modular exponentiation function power(a, b, p) computes (a^b) mod p.",
+          "Public keys: x = g^a mod p (User A) and y = g^b mod p (User B).",
+          "Shared secret keys: ka = y^a mod p and kb = x^b mod p. Both ka and kb evaluate to the exact same value!",
+          "Sample test input: p = 23, g = 9, a = 4, b = 3 → x = 6, y = 16, Secret key ka = kb = 9."
+        ],
+        simFields: [
+          { id: 'p', label: 'Prime number (p)', type: 'number', defaultValue: '23' },
+          { id: 'g', label: 'Primitive root (g)', type: 'number', defaultValue: '9' },
+          { id: 'a', label: 'Private key User A (a)', type: 'number', defaultValue: '4' },
+          { id: 'b', label: 'Private key User B (b)', type: 'number', defaultValue: '3' }
+        ]
+      },
+      {
+        id: 'sha1',
+        number: 3,
+        pdfPage: 3,
+        shortName: 'SHA-1 Digest',
+        title: 'SHA 1 (java prog)',
+        language: 'Java',
+        filename: 'SHA1.java',
+        compileCmd: 'javac SHA1.java && java SHA1',
+        exactCode: `import java.security.*; import java.util.Scanner;
+public class SHA1 {
+ public static void main(String[] args) { try {
+ Scanner sc = new Scanner(System.in);
+ System.out.print("Enter text: "); String input = sc.nextLine();
+ MessageDigest md = MessageDigest.getInstance("SHA-1");
+ byte[] hash = md.digest(input.getBytes()); System.out.print("SHA-1 Hash: ");
+ for (byte b : hash)
+ System.out.printf("%02X", b & 0xff);
+ System.out.println();sc.close();
+ } catch (Exception e) {
+ System.out.println("Exception: " + e); } } }`,
+        cleanCode: `import java.security.*;
+import java.util.Scanner;
+
+public class SHA1 {
+    public static void main(String[] args) {
+        try {
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Enter text: ");
+            String input = sc.nextLine();
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hash = md.digest(input.getBytes());
+            System.out.print("SHA-1 Hash: ");
+            for (byte b : hash)
+                System.out.printf("%02X", b & 0xff);
+            System.out.println();
+            sc.close();
+        } catch (Exception e) {
+            System.out.println("Exception: " + e);
+        }
+    }
+}`,
+        blanks: [
+          { token: "MessageDigest.getInstance(\"SHA-1\")", hint: "get SHA-1 digest instance" },
+          { token: "md.digest(input.getBytes())", hint: "compute hash bytes" },
+          { token: "\"%02X\", b & 0xff", hint: "uppercase hex format per byte" }
+        ],
+        notes: [
+          "Class name is SHA1 — save file as SHA1.java.",
+          "Uses java.security.MessageDigest.getInstance(\"SHA-1\") to generate a 160-bit (20-byte / 40-hex-character) hash.",
+          "Prints each byte in uppercase hexadecimal using System.out.printf(\"%02X\", b & 0xff)."
+        ],
+        simFields: [
+          { id: 'text', label: 'Enter text', type: 'text', defaultValue: 'hello' }
+        ]
+      },
+      {
+        id: 'des',
+        number: 4,
+        pdfPage: 3,
+        shortName: 'DES Crypto',
+        title: 'DES (java prog)',
+        language: 'Java',
+        filename: 'Main.java',
+        compileCmd: 'javac Main.java && java Main',
+        exactCode: `import javax.crypto.*; import java.util.*;
+import javax.crypto.spec.SecretKeySpec;
+class Main {
+ static byte[] encrypt(byte[] key, byte[] data) throws Exception {
+ Cipher c = Cipher.getInstance("DES");
+ c.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "DES")); return c.doFinal(data); }
+ static byte[] decrypt(byte[] key, byte[] data) throws Exception {
+ Cipher c = Cipher.getInstance("DES");
+ c.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "DES")); return c.doFinal(data); }
+ public static void main(String[] args) throws Exception {
+ Scanner sc = new Scanner(System.in); System.out.print("Enter message: ");
+ String msg = sc.nextLine(); System.out.print("Enter 8-character key: ");
+ String k = sc.nextLine(); byte[] key = k.getBytes();
+ byte[] enc = encrypt(key, msg.getBytes());
+ System.out.println("Encrypted message: " + Base64.getEncoder().encodeToString(enc));
+ byte[] dec = decrypt(key, enc);
+ System.out.println("Decrypted message: " + new String(dec)); sc.close(); } }`,
+        cleanCode: `import javax.crypto.*;
+import java.util.*;
+import javax.crypto.spec.SecretKeySpec;
+
+class Main {
+    static byte[] encrypt(byte[] key, byte[] data) throws Exception {
+        Cipher c = Cipher.getInstance("DES");
+        c.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "DES"));
+        return c.doFinal(data);
+    }
+
+    static byte[] decrypt(byte[] key, byte[] data) throws Exception {
+        Cipher c = Cipher.getInstance("DES");
+        c.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "DES"));
+        return c.doFinal(data);
+    }
+
+    public static void main(String[] args) throws Exception {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter message: ");
+        String msg = sc.nextLine();
+        System.out.print("Enter 8-character key: ");
+        String k = sc.nextLine();
+        byte[] key = k.getBytes();
+        byte[] enc = encrypt(key, msg.getBytes());
+        System.out.println("Encrypted message: " + Base64.getEncoder().encodeToString(enc));
+        byte[] dec = decrypt(key, enc);
+        System.out.println("Decrypted message: " + new String(dec));
+        sc.close();
+    }
+}`,
+        blanks: [
+          { token: "Cipher.getInstance(\"DES\")", hint: "create DES cipher" },
+          { token: "new SecretKeySpec(key, \"DES\")", hint: "wrap 8-byte key" },
+          { token: "Base64.getEncoder().encodeToString(enc)", hint: "encode encrypted bytes" }
+        ],
+        notes: [
+          "Imports required: javax.crypto.*, java.util.*, and javax.crypto.spec.SecretKeySpec.",
+          "IMPORTANT during lab execution: The key MUST be exactly 8 characters (64 bits) long (e.g., 12345678 or secret88), otherwise DES throws InvalidKeyException.",
+          "encrypt() uses Cipher.ENCRYPT_MODE and decrypt() uses Cipher.DECRYPT_MODE, both calling c.doFinal(data)."
+        ],
+        simFields: [
+          { id: 'msg', label: 'Enter message', type: 'text', defaultValue: 'Confidential' },
+          { id: 'key', label: 'Enter 8-character key', type: 'text', defaultValue: '12345678' }
+        ]
+      },
+      {
+        id: 'rsa',
+        number: 5,
+        pdfPage: 4,
+        shortName: 'RSA Algorithm',
+        title: 'RSA (c prog)',
+        language: 'C',
+        filename: 'rsa.c',
+        compileCmd: 'gcc rsa.c -o rsa && ./rsa',
+        exactCode: `#include <stdio.h>
+#include <string.h>
+int p = 17, q = 19, n, phi, e = 5, d;
+char msg[100];
+int power(int a, int b, int n)
+{
+ int r = 1, i;
+ for (i = 0; i < b; i++)
+ r = (r * a) % n;
+ return r; }
+void check()
+{ d = 1;
+ while ((d * e) % phi != 1)
+ d++; }
+void encrypt()
+{ int i; printf("Encrypted message: ");
+ for (i = 0; msg[i] != '\\0' && msg[i] != '\\n'; i++)
+ printf("%d ", power((unsigned char)msg[i], e, n));
+ printf("\\n"); }
+void decrypt()
+{ int i, c, m; printf("Decrypted message: ");
+ for (i = 0; msg[i] != '\\0' && msg[i] != '\\n'; i++)
+ { c = power((unsigned char)msg[i], e, n);
+ m = power(c, d, n); printf("%c", m); }
+ printf("\\n"); }
+int main()
+{ n = p * q; phi = (p - 1) * (q - 1); check();
+ printf("Public Key: {%d, %d}\\n", e, n);
+ printf("Private Key: {%d, %d}\\n", d, n);
+ printf("Enter message: "); fgets(msg, sizeof(msg), stdin);
+ encrypt(); decrypt(); return 0; }`,
+        cleanCode: `#include <stdio.h>
+#include <string.h>
+
+int p = 17, q = 19, n, phi, e = 5, d;
+char msg[100];
+
+int power(int a, int b, int n)
+{
+    int r = 1, i;
+    for (i = 0; i < b; i++)
+        r = (r * a) % n;
+    return r;
+}
+
+void check()
+{
+    d = 1;
+    while ((d * e) % phi != 1)
+        d++;
+}
+
+void encrypt()
+{
+    int i;
+    printf("Encrypted message: ");
+    for (i = 0; msg[i] != '\\0' && msg[i] != '\\n'; i++)
+        printf("%d ", power((unsigned char)msg[i], e, n));
+    printf("\\n");
+}
+
+void decrypt()
+{
+    int i, c, m;
+    printf("Decrypted message: ");
+    for (i = 0; msg[i] != '\\0' && msg[i] != '\\n'; i++)
+    {
+        c = power((unsigned char)msg[i], e, n);
+        m = power(c, d, n);
+        printf("%c", m);
+    }
+    printf("\\n");
+}
+
+int main()
+{
+    n = p * q;
+    phi = (p - 1) * (q - 1);
+    check();
+    printf("Public Key: {%d, %d}\\n", e, n);
+    printf("Private Key: {%d, %d}\\n", d, n);
+    printf("Enter message: ");
+    fgets(msg, sizeof(msg), stdin);
+    encrypt();
+    decrypt();
+    return 0;
+}`,
+        blanks: [
+          { token: "while ((d * e) % phi != 1)", hint: "find modular inverse d" },
+          { token: "power((unsigned char)msg[i], e, n)", hint: "encrypt character" },
+          { token: "m = power(c, d, n);", hint: "decrypt cipher c" },
+          { token: "phi = (p - 1) * (q - 1);", hint: "Euler totient phi" }
+        ],
+        notes: [
+          "Hardcoded parameters in PDF: p = 17, q = 19, e = 5 → n = 323, phi = 288, and check() finds d = 173.",
+          "Public Key printed is {5, 323} and Private Key printed is {173, 323}.",
+          "Each character is encrypted as c = (msg[i]^e) mod n and decrypted as m = (c^d) mod n."
+        ],
+        simFields: [
+          { id: 'msg', label: 'Enter message', type: 'text', defaultValue: 'HELLO' }
+        ]
+      },
+      {
+        id: 'md5',
+        number: 6,
+        pdfPage: 5,
+        shortName: 'MD5 Digest',
+        title: 'MD5 (java prog)',
+        language: 'Java',
+        filename: 'Main.java',
+        compileCmd: 'javac Main.java && java Main',
+        exactCode: `import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Scanner;
+public class Main {
+ public static void main(String[] args) {
+ Scanner sc = new Scanner(System.in);
+ System.out.print("Enter text: ");
+ String input = sc.nextLine();
+ System.out.println("MD5 Hash: " + md5(input));
+ sc.close();
+ }
+ public static String md5(String input) {
+ if (input == null)
+ return null;
+ try {
+ MessageDigest digest = MessageDigest.getInstance("MD5");
+ byte[] hash = digest.digest(input.getBytes());
+ String result = new BigInteger(1, hash).toString(16);
+ while (result.length() < 32)
+ result = "0" + result;
+ return result;
+ }
+ catch (NoSuchAlgorithmException e) {
+ e.printStackTrace();
+ return null;
+ }
+ }
+}`,
+        cleanCode: `import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter text: ");
+        String input = sc.nextLine();
+        System.out.println("MD5 Hash: " + md5(input));
+        sc.close();
+    }
+
+    public static String md5(String input) {
+        if (input == null)
+            return null;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] hash = digest.digest(input.getBytes());
+            String result = new BigInteger(1, hash).toString(16);
+            while (result.length() < 32)
+                result = "0" + result;
+            return result;
+        }
+        catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+}`,
+        blanks: [
+          { token: "MessageDigest.getInstance(\"MD5\")", hint: "get MD5 instance" },
+          { token: "new BigInteger(1, hash).toString(16)", hint: "convert hash bytes to hex string" },
+          { token: "while (result.length() < 32)", hint: "pad leading zeros to 32 hex chars" }
+        ],
+        notes: [
+          "Uses BigInteger(1, hash).toString(16) to convert the 16-byte MD5 digest into a lowercase hexadecimal string.",
+          "Pads with leading zeros while (result.length() < 32) to ensure a full 32-character hex output.",
+          "Compare with SHA-1: SHA-1 uses a for(byte b : hash) loop with printf(\"%02X\"), whereas MD5 uses BigInteger(1, hash).toString(16)."
+        ],
+        simFields: [
+          { id: 'text', label: 'Enter text', type: 'text', defaultValue: 'hello' }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE & STORAGE
+    // =========================================================================
+    const state = {
+      activeProgramId: 'caesar',
+      viewMode: 'single', // 'single' | 'all'
+      codeFormat: 'exact', // 'exact' | 'clean' | 'practice'
+      showLineNumbers: true,
+      langFilter: 'all', // 'all' | 'C' | 'Java'
+      searchQuery: '',
+      revisedIds: {}
+    };
+
+    function loadSavedProgress() {
+      try {
+        const raw = localStorage.getItem('ns_lab_revised_v1');
+        if (raw) {
+          state.revisedIds = JSON.parse(raw) || {};
+        }
+      } catch (e) {
+        state.revisedIds = {};
+      }
+    }
+
+    function saveProgress() {
+      try {
+        localStorage.setItem('ns_lab_revised_v1', JSON.stringify(state.revisedIds));
+      } catch (e) {
+        // Ignore storage errors in sandboxed frames
+      }
+    }
+
+    // =========================================================================
+    // 3. CRYPTO & SIMULATION HELPERS (True SHA-1, True MD5, Modular Math)
+    // =========================================================================
+    function modPow(base, exp, mod) {
+      if (mod === 0) return 0;
+      let r = 1;
+      let a = ((base % mod) + mod) % mod;
+      for (let i = 0; i < exp; i++) {
+        r = (r * a) % mod;
+      }
+      return r;
+    }
+
+    // Pure JS MD5 implementation (RFC 1321) so live simulator matches Java MD5 output
+    function computeMD5Hex(str) {
+      function rotateLeft(lValue, iShiftBits) {
+        return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
+      }
+      function addUnsigned(lX, lY) {
+        const lX8 = lX & 0x80000000;
+        const lY8 = lY & 0x80000000;
+        const lX4 = lX & 0x40000000;
+        const lY4 = lY & 0x40000000;
+        const lResult = (lX & 0x3fffffff) + (lY & 0x3fffffff);
+        if (lX4 & lY4) return lResult ^ 0x80000000 ^ lX8 ^ lY8;
+        if (lX4 | lY4) {
+          if (lResult & 0x40000000) return lResult ^ 0xc0000000 ^ lX8 ^ lY8;
+          else return lResult ^ 0x40000000 ^ lX8 ^ lY8;
+        } else {
+          return lResult ^ lX8 ^ lY8;
+        }
+      }
+      function F(x, y, z) { return (x & y) | (~x & z); }
+      function G(x, y, z) { return (x & z) | (y & ~z); }
+      function H(x, y, z) { return x ^ y ^ z; }
+      function I(x, y, z) { return y ^ (x | ~z); }
+      function FF(a, b, c, d, x, s, ac) {
+        a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac));
+        return addUnsigned(rotateLeft(a, s), b);
+      }
+      function GG(a, b, c, d, x, s, ac) {
+        a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac));
+        return addUnsigned(rotateLeft(a, s), b);
+      }
+      function HH(a, b, c, d, x, s, ac) {
+        a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac));
+        return addUnsigned(rotateLeft(a, s), b);
+      }
+      function II(a, b, c, d, x, s, ac) {
+        a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac));
+        return addUnsigned(rotateLeft(a, s), b);
+      }
+      function convertToWordArray(string) {
+        const utf8 = unescape(encodeURIComponent(string));
+        const lMessageLength = utf8.length;
+        const lNumberOfWordsTemp1 = lMessageLength + 8;
+        const lNumberOfWordsTemp2 = (lNumberOfWordsTemp1 - (lNumberOfWordsTemp1 % 64)) / 64;
+        const lNumberOfWords = (lNumberOfWordsTemp2 + 1) * 16;
+        const lWordArray = new Array(lNumberOfWords - 1).fill(0);
+        let lBytePosition = 0;
+        let lByteCount = 0;
+        while (lByteCount < lMessageLength) {
+          const lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+          lBytePosition = (lByteCount % 4) * 8;
+          lWordArray[lWordCount] = (lWordArray[lWordCount] | (utf8.charCodeAt(lByteCount) << lBytePosition));
+          lByteCount++;
+        }
+        const lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+        lBytePosition = (lByteCount % 4) * 8;
+        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
+        lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
+        lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
+        return lWordArray;
+      }
+      function wordToHex(lValue) {
+        let wordToHexValue = '';
+        for (let lCount = 0; lCount <= 3; lCount++) {
+          const lByte = (lValue >>> (lCount * 8)) & 255;
+          const temp = '0' + lByte.toString(16);
+          wordToHexValue += temp.substr(temp.length - 2, 2);
+        }
+        return wordToHexValue;
+      }
+      const x = convertToWordArray(str);
+      let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
+      for (let k = 0; k < x.length; k += 16) {
+        const AA = a, BB = b, CC = c, DD = d;
+        a = FF(a, b, c, d, x[k + 0], 7, 0xd76aa478);
+        d = FF(d, a, b, c, x[k + 1], 12, 0xe8c7b756);
+        c = FF(c, d, a, b, x[k + 2], 17, 0x242070db);
+        b = FF(b, c, d, a, x[k + 3], 22, 0xc1bdceee);
+        a = FF(a, b, c, d, x[k + 4], 7, 0xf57c0faf);
+        d = FF(d, a, b, c, x[k + 5], 12, 0x4787c62a);
+        c = FF(c, d, a, b, x[k + 6], 17, 0xa8304613);
+        b = FF(b, c, d, a, x[k + 7], 22, 0xfd469501);
+        a = FF(a, b, c, d, x[k + 8], 7, 0x698098d8);
+        d = FF(d, a, b, c, x[k + 9], 12, 0x8b44f7af);
+        c = FF(c, d, a, b, x[k + 10], 17, 0xffff5bb1);
+        b = FF(b, c, d, a, x[k + 11], 22, 0x895cd7be);
+        a = FF(a, b, c, d, x[k + 12], 7, 0x6b901122);
+        d = FF(d, a, b, c, x[k + 13], 12, 0xfd987193);
+        c = FF(c, d, a, b, x[k + 14], 17, 0xa679438e);
+        b = FF(b, c, d, a, x[k + 15], 22, 0x49b40821);
+        a = GG(a, b, c, d, x[k + 1], 5, 0xf61e2562);
+        d = GG(d, a, b, c, x[k + 6], 9, 0xc040b340);
+        c = GG(c, d, a, b, x[k + 11], 14, 0x265e5a51);
+        b = GG(b, c, d, a, x[k + 0], 20, 0xe9b6c7aa);
+        a = GG(a, b, c, d, x[k + 5], 5, 0xd62f105d);
+        d = GG(d, a, b, c, x[k + 10], 9, 0x02441453);
+        c = GG(c, d, a, b, x[k + 15], 14, 0xd8a1e681);
+        b = GG(b, c, d, a, x[k + 4], 20, 0xe7d3fbc8);
+        a = GG(a, b, c, d, x[k + 9], 5, 0x21e1cde6);
+        d = GG(d, a, b, c, x[k + 14], 9, 0xc33707d6);
+        c = GG(c, d, a, b, x[k + 3], 14, 0xf4d50d87);
+        b = GG(b, c, d, a, x[k + 8], 20, 0x455a14ed);
+        a = GG(a, b, c, d, x[k + 13], 5, 0xa9e3e905);
+        d = GG(d, a, b, c, x[k + 2], 9, 0xfcefa3f8);
+        c = GG(c, d, a, b, x[k + 7], 14, 0x676f02d9);
+        b = GG(b, c, d, a, x[k + 12], 20, 0x8d2a4c8a);
+        a = HH(a, b, c, d, x[k + 5], 4, 0xfffa3942);
+        d = HH(d, a, b, c, x[k + 8], 11, 0x8771f681);
+        c = HH(c, d, a, b, x[k + 11], 16, 0x6d9d6122);
+        b = HH(b, c, d, a, x[k + 14], 23, 0xfde5380c);
+        a = HH(a, b, c, d, x[k + 1], 4, 0xa4beea44);
+        d = HH(d, a, b, c, x[k + 4], 11, 0x4bdecfa9);
+        c = HH(c, d, a, b, x[k + 7], 16, 0xf6bb4b60);
+        b = HH(b, c, d, a, x[k + 10], 23, 0xbebfbc70);
+        a = HH(a, b, c, d, x[k + 13], 4, 0x289b7ec6);
+        d = HH(d, a, b, c, x[k + 0], 11, 0xeaa127fa);
+        c = HH(c, d, a, b, x[k + 3], 16, 0xd4ef3085);
+        b = HH(b, c, d, a, x[k + 6], 23, 0x04881d05);
+        a = HH(a, b, c, d, x[k + 9], 4, 0xd9d4d039);
+        d = HH(d, a, b, c, x[k + 12], 11, 0xe6db99e5);
+        c = HH(c, d, a, b, x[k + 15], 16, 0x1fa27cf8);
+        b = HH(b, c, d, a, x[k + 2], 23, 0xc4ac5665);
+        a = II(a, b, c, d, x[k + 0], 6, 0xf4292244);
+        d = II(d, a, b, c, x[k + 7], 10, 0x432aff97);
+        c = II(c, d, a, b, x[k + 14], 15, 0xab9423a7);
+        b = II(b, c, d, a, x[k + 5], 21, 0xfc93a039);
+        a = II(a, b, c, d, x[k + 12], 6, 0x655b59c3);
+        d = II(d, a, b, c, x[k + 3], 10, 0x8f0ccc92);
+        c = II(c, d, a, b, x[k + 10], 15, 0xffeff47d);
+        b = II(b, c, d, a, x[k + 1], 21, 0x85845dd1);
+        a = II(a, b, c, d, x[k + 8], 6, 0x6fa87e4f);
+        d = II(d, a, b, c, x[k + 15], 10, 0xfe2ce6e0);
+        c = II(c, d, a, b, x[k + 6], 15, 0xa3014314);
+        b = II(b, c, d, a, x[k + 13], 21, 0x4e0811a1);
+        a = II(a, b, c, d, x[k + 4], 6, 0xf7537e82);
+        d = II(d, a, b, c, x[k + 11], 10, 0xbd3af235);
+        c = II(c, d, a, b, x[k + 2], 15, 0x2ad7d2bb);
+        b = II(b, c, d, a, x[k + 9], 21, 0xeb86d391);
+        a = addUnsigned(a, AA);
+        b = addUnsigned(b, BB);
+        c = addUnsigned(c, CC);
+        d = addUnsigned(d, DD);
+      }
+      return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
+    }
+
+    // Pure JS SHA-1 implementation (FIPS 180-1) so live simulator matches Java SHA-1 uppercase output
+    function computeSHA1HexUpper(str) {
+      function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
+      const utf8 = unescape(encodeURIComponent(str));
+      const words = [];
+      for (let i = 0; i < utf8.length; i++) {
+        words[i >>> 2] |= (utf8.charCodeAt(i) & 0xff) << (24 - (i % 4) * 8);
+      }
+      words[utf8.length >>> 2] |= 0x80 << (24 - (utf8.length % 4) * 8);
+      words[(((utf8.length + 8) >>> 6) << 4) + 15] = utf8.length * 8;
+
+      let h0 = 0x67452301, h1 = 0xefcdab89, h2 = 0x98badcfe, h3 = 0x10325476, h4 = 0xc3d2e1f0;
+      const w = new Array(80);
+      for (let i = 0; i < words.length; i += 16) {
+        for (let t = 0; t < 16; t++) w[t] = words[i + t] | 0;
+        for (let t = 16; t < 80; t++) w[t] = rotl(w[t - 3] ^ w[t - 8] ^ w[t - 14] ^ w[t - 16], 1);
+        let a = h0, b = h1, c = h2, d = h3, e = h4;
+        for (let t = 0; t < 80; t++) {
+          let f, k;
+          if (t < 20) { f = (b & c) | (~b & d); k = 0x5a827999; }
+          else if (t < 40) { f = b ^ c ^ d; k = 0x6ed9eba1; }
+          else if (t < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8f1bbcdc; }
+          else { f = b ^ c ^ d; k = 0xca62c1d6; }
+          const temp = (rotl(a, 5) + f + e + k + w[t]) | 0;
+          e = d; d = c; c = rotl(b, 30); b = a; a = temp;
+        }
+        h0 = (h0 + a) | 0; h1 = (h1 + b) | 0; h2 = (h2 + c) | 0; h3 = (h3 + d) | 0; h4 = (h4 + e) | 0;
+      }
+      function toHex(n) {
+        return ('00000000' + (n >>> 0).toString(16)).slice(-8).toUpperCase();
+      }
+      return toHex(h0) + toHex(h1) + toHex(h2) + toHex(h3) + toHex(h4);
+    }
+
+    // =========================================================================
+    // 4. UI RENDERING FUNCTIONS
+    // =========================================================================
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toastMessage');
+      msgEl.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      if (window._toastTimer) clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2200);
+    }
+
+    function copyTextToClipboard(text, label) {
+      const fallbackCopy = () => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast(label || 'Copied to clipboard!');
+        } catch (err) {
+          showToast('Press Ctrl+C to copy');
+        }
+        document.body.removeChild(ta);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(label || 'Copied to clipboard!');
+        }).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    function downloadSourceFile(filename, content) {
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Downloaded ${filename}`);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Simple syntax highlighter for C and Java code (when not in practice mode)
+    function highlightCodeLine(rawLine) {
+      let escaped = escapeHtml(rawLine);
+      // Preprocessor directives
+      if (/^\s*#include/.test(escaped)) {
+        return `<span class="text-pink-400">${escaped}</span>`;
+      }
+      // Strings
+      const strings = [];
+      escaped = escaped.replace(/"([^"\\]|\\.)*"/g, (match) => {
+        strings.push(match);
+        return `___STR_${strings.length - 1}___`;
+      });
+
+      // Keywords
+      escaped = escaped.replace(
+        /\b(import|public|class|static|void|int|char|byte|String|for|if|else|while|return|try|catch|new|throws)\b/g,
+        '<span class="text-indigo-400 font-semibold">$1</span>'
+      );
+
+      // Standard types/classes
+      escaped = escaped.replace(
+        /\b(Scanner|System|MessageDigest|Cipher|SecretKeySpec|Base64|BigInteger|Exception|NoSuchAlgorithmException)\b/g,
+        '<span class="text-cyan-300">$1</span>'
+      );
+
+      // Restore strings
+      escaped = escaped.replace(/___STR_(\d+)___/g, (_, idx) => {
+        return `<span class="text-amber-300">${strings[Number(idx)]}</span>`;
+      });
+
+      return escaped;
+    }
+
+    function getFilteredPrograms() {
+      return PROGRAMS.filter((p) => {
+        const matchesLang = state.langFilter === 'all' || p.language === state.langFilter;
+        const q = state.searchQuery.trim().toLowerCase();
+        const matchesSearch = !q ||
+          p.title.toLowerCase().includes(q) ||
+          p.shortName.toLowerCase().includes(q) ||
+          p.language.toLowerCase().includes(q) ||
+          p.exactCode.toLowerCase().includes(q);
+        return matchesLang && matchesSearch;
+      });
+    }
+
+    function renderProgressHeader() {
+      const count = PROGRAMS.filter((p) => state.revisedIds[p.id]).length;
+      document.getElementById('progressText').textContent = `${count} / ${PROGRAMS.length}`;
+      const pct = Math.round((count / PROGRAMS.length) * 100);
+      document.getElementById('progressBar').style.width = `${pct}%`;
+    }
+
+    function renderProgramPills() {
+      const container = document.getElementById('programPillsContainer');
+      const filtered = getFilteredPrograms();
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        document.getElementById('emptySearchState').classList.remove('hidden');
+        document.getElementById('singleProgramView').classList.add('hidden');
+        document.getElementById('allProgramsView').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('emptySearchState').classList.add('hidden');
+      if (state.viewMode === 'single') {
+        document.getElementById('singleProgramView').classList.remove('hidden');
+        document.getElementById('allProgramsView').classList.add('hidden');
+        if (!filtered.some((p) => p.id === state.activeProgramId)) {
+          state.activeProgramId = filtered[0].id;
+        }
+      } else {
+        document.getElementById('singleProgramView').classList.add('hidden');
+        document.getElementById('allProgramsView').classList.remove('hidden');
+      }
+
+      container.innerHTML = filtered.map((prog) => {
+        const isActive = state.viewMode === 'single' && prog.id === state.activeProgramId;
+        const isRevised = !!state.revisedIds[prog.id];
+        const langBadgeColor = prog.language === 'C'
+          ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+          : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+        return `
+          <button
+            type="button"
+            data-prog-id="${prog.id}"
+            class="prog-pill-btn text-left p-3 rounded-xl border transition-all flex flex-col justify-between gap-1.5 ${
+              isActive
+                ? 'bg-indigo-600/20 border-indigo-500 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-400/50'
+                : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
+            }"
+          >
+            <div class="flex items-center justify-between gap-1 w-full">
+              <span class="text-[11px] font-mono font-bold ${isActive ? 'text-indigo-300' : 'text-slate-400'}">
+                #${prog.number} • Page ${prog.pdfPage}
+              </span>
+              <div class="flex items-center gap-1">
+                ${isRevised ? '<span class="text-emerald-400 text-xs font-bold" title="Marked Revised">✓</span>' : ''}
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded border ${langBadgeColor}">${prog.language}</span>
+              </div>
+            </div>
+            <div class="font-bold text-xs sm:text-sm text-white truncate w-full">${prog.shortName}</div>
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.prog-pill-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-prog-id');
+          state.activeProgramId = id;
+          if (state.viewMode === 'all') {
+            const targetCard = document.getElementById(`all-card-${id}`);
+            if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            renderAll();
+          }
+        });
+      });
+    }
+
+    function renderSingleProgramView() {
+      const prog = PROGRAMS.find((p) => p.id === state.activeProgramId) || PROGRAMS[0];
+      const filtered = getFilteredPrograms();
+      const idxInFiltered = filtered.findIndex((p) => p.id === prog.id);
+
+      document.getElementById('activeProgNumber').textContent = `Program #${prog.number} (PDF Page ${prog.pdfPage})`;
+      const langBadge = document.getElementById('activeProgLangBadge');
+      langBadge.textContent = `${prog.language} Program`;
+      langBadge.className = prog.language === 'C'
+        ? 'text-xs font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30'
+        : 'text-xs font-mono font-semibold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30';
+
+      document.getElementById('activeProgFile').textContent = prog.filename;
+      document.getElementById('activeProgTitle').textContent = prog.title;
+
+      // Revised button state
+      const isRevised = !!state.revisedIds[prog.id];
+      const revBtn = document.getElementById('markRevisedBtn');
+      document.getElementById('markRevisedIcon').textContent = isRevised ? '✓' : '○';
+      document.getElementById('markRevisedText').textContent = isRevised ? 'Revised' : 'Mark Revised';
+      revBtn.className = isRevised
+        ? 'px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+        : 'px-3 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 bg-slate-800 border-slate-700 text-slate-300 hover:text-white';
+
+      // Format toggle styling
+      const fmtExactBtn = document.getElementById('fmtExactBtn');
+      const fmtCleanBtn = document.getElementById('fmtCleanBtn');
+      const fmtPracticeBtn = document.getElementById('fmtPracticeBtn');
+      const practiceToolbar = document.getElementById('practiceToolbar');
+
+      [fmtExactBtn, fmtCleanBtn, fmtPracticeBtn].forEach((b) => {
+        b.className = 'px-2.5 py-1 rounded-md text-xs font-medium text-slate-300 hover:text-white transition';
+      });
+      if (state.codeFormat === 'exact') {
+        fmtExactBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition';
+        practiceToolbar.classList.add('hidden');
+      } else if (state.codeFormat === 'clean') {
+        fmtCleanBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition';
+        practiceToolbar.classList.add('hidden');
+      } else {
+        fmtPracticeBtn.className = 'px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition';
+        practiceToolbar.classList.remove('hidden');
+      }
+
+      // Render code lines
+      const rawCode = state.codeFormat === 'clean' ? prog.cleanCode : prog.exactCode;
+      const lines = rawCode.split('\n');
+      document.getElementById('lineCountBadge').textContent = `${lines.length} lines`;
+
+      const codeDisplayArea = document.getElementById('codeDisplayArea');
+      if (state.codeFormat === 'practice') {
+        let htmlCode = escapeHtml(prog.cleanCode);
+        prog.blanks.forEach((b, bIdx) => {
+          const escapedToken = escapeHtml(b.token);
+          const inputHtml = `<input type="text" data-answer="${escapedToken.replace(/"/g, '&quot;')}" placeholder="${b.hint}" class="blank-input w-48 sm:w-56" />`;
+          htmlCode = htmlCode.replace(escapedToken, inputHtml);
+        });
+        const practiceLines = htmlCode.split('\n');
+        codeDisplayArea.innerHTML = practiceLines.map((line, idx) => `
+          <div class="flex items-baseline leading-7">
+            ${state.showLineNumbers ? `<span class="w-8 shrink-0 select-none text-right pr-3 text-slate-600 text-xs">${idx + 1}</span>` : ''}
+            <span class="whitespace-pre text-slate-200">${line || ' '}</span>
+          </div>
+        `).join('');
+      } else {
+        codeDisplayArea.innerHTML = lines.map((line, idx) => `
+          <div class="flex items-baseline hover:bg-slate-900/80 rounded px-1 -mx-1">
+            ${state.showLineNumbers ? `<span class="w-8 shrink-0 select-none text-right pr-3 text-slate-600 text-xs">${idx + 1}</span>` : ''}
+            <span class="whitespace-pre text-slate-100">${highlightCodeLine(line) || ' '}</span>
+          </div>
+        `).join('');
+      }
+
+      // Prev / Next indicator
+      document.getElementById('progPositionIndicator').textContent = `${idxInFiltered + 1} of ${filtered.length}`;
+
+      // Compile command
+      document.getElementById('compileCmdText').textContent = prog.compileCmd;
+
+      // Exam Quick-Recall notes
+      const notesEl = document.getElementById('examNotesContainer');
+      notesEl.innerHTML = prog.notes.map((n) => `
+        <div class="flex items-start gap-2 bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5">
+          <span class="text-indigo-400 font-bold mt-0.5">•</span>
+          <span class="leading-relaxed text-slate-300">${escapeHtml(n)}</span>
+        </div>
+      `).join('');
+
+      // Render Simulator Inputs & Run Simulation
+      renderSimulatorInputs(prog);
+      runSimulationForProgram(prog);
+    }
+
+    function renderSimulatorInputs(prog) {
+      const container = document.getElementById('simInputsContainer');
+      document.getElementById('simTerminalHeader').textContent = `terminal — ${prog.compileCmd}`;
+
+      container.innerHTML = prog.simFields.map((field) => `
+        <div class="${prog.simFields.length === 1 ? 'sm:col-span-2' : ''}">
+          <label class="block text-[11px] font-medium text-slate-400 mb-1">${escapeHtml(field.label)}</label>
+          <input
+            type="${field.type}"
+            id="sim-field-${field.id}"
+            value="${escapeHtml(field.defaultValue)}"
+            class="sim-live-input w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white font-mono focus:outline-none focus:border-emerald-500 transition"
+          />
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.sim-live-input').forEach((inp) => {
+        inp.addEventListener('input', () => runSimulationForProgram(prog));
+      });
+    }
+
+    function runSimulationForProgram(prog) {
+      const outPre = document.getElementById('simOutputPre');
+      const getVal = (id, fallback) => {
+        const el = document.getElementById(`sim-field-${id}`);
+        return el ? el.value : fallback;
+      };
+
+      if (prog.id === 'caesar') {
+        const text = getVal('msg', 'HelloWorld');
+        const shiftRaw = parseInt(getVal('shift', '3'), 10);
+        const shiftVal = Number.isNaN(shiftRaw) ? 0 : shiftRaw;
+        const normShift = ((shiftVal % 26) + 26) % 26;
+
+        const caesarTransform = (str, s) => {
+          const eff = ((s % 26) + 26) % 26;
+          return str.split('').map((ch) => {
+            const code = ch.charCodeAt(0);
+            if (code >= 97 && code <= 122) {
+              return String.fromCharCode(((code - 97 + eff) % 26) + 97);
+            }
+            if (code >= 65 && code <= 90) {
+              return String.fromCharCode(((code - 65 + eff) % 26) + 65);
+            }
+            return ch;
+          }).join('');
+        };
+
+        const encrypted = caesarTransform(text, normShift);
+        const decrypted = caesarTransform(encrypted, 26 - (normShift % 26));
+        outPre.textContent =
+          `Enter a message to encrypt: ${text}\n` +
+          `Enter shift amount: ${shiftVal}\n` +
+          `Encrypted message: ${encrypted}\n` +
+          `Decrypted message: ${decrypted}`;
+      } else if (prog.id === 'diffie') {
+        const p = Math.max(2, parseInt(getVal('p', '23'), 10) || 23);
+        const g = Math.max(1, parseInt(getVal('g', '9'), 10) || 9);
+        const a = Math.max(1, Math.min(500, parseInt(getVal('a', '4'), 10) || 4));
+        const b = Math.max(1, Math.min(500, parseInt(getVal('b', '3'), 10) || 3));
+        const x = modPow(g, a, p);
+        const y = modPow(g, b, p);
+        const ka = modPow(y, a, p);
+        const kb = modPow(x, b, p);
+
+        outPre.textContent =
+          `Enter prime number p: ${p}\n` +
+          `Enter primitive root g: ${g}\n` +
+          `Enter private key of User A: ${a}\n` +
+          `Enter private key of User B: ${b}\n\n` +
+          `Public key of User A: ${x}\n` +
+          `Public key of User B: ${y}\n\n` +
+          `User A sends public key ${x} to User B\n` +
+          `User B sends public key ${y} to User A\n\n` +
+          `Secret key of User A: ${ka}\n` +
+          `Secret key of User B: ${kb}`;
+      } else if (prog.id === 'sha1') {
+        const text = getVal('text', 'hello');
+        const hashHex = computeSHA1HexUpper(text);
+        outPre.textContent =
+          `Enter text: ${text}\n` +
+          `SHA-1 Hash: ${hashHex}`;
+      } else if (prog.id === 'des') {
+        const msg = getVal('msg', 'Confidential');
+        const key = getVal('key', '12345678');
+        if (key.length !== 8) {
+          outPre.textContent =
+            `Enter message: ${msg}\n` +
+            `Enter 8-character key: ${key}\n` +
+            `Exception in thread "main" java.security.InvalidKeyException: Wrong key size (Key must be exactly 8 characters / 8 bytes for DES!)`;
+        } else {
+          // Deterministic 8-byte block Feistel/XOR simulation padded to 8-byte boundary for Base64 preview
+          const msgBytes = [];
+          for (let i = 0; i < msg.length; i++) msgBytes.push(msg.charCodeAt(i) & 0xff);
+          const padLen = 8 - (msgBytes.length % 8);
+          for (let i = 0; i < padLen; i++) msgBytes.push(padLen);
+          const encBytes = msgBytes.map((b, i) => {
+            const kByte = key.charCodeAt(i % 8) & 0xff;
+            return (b ^ ((kByte * 37 + i * 13) & 0xff)) & 0xff;
+          });
+          let bin = '';
+          encBytes.forEach((b) => { bin += String.fromCharCode(b); });
+          const b64 = btoa(bin);
+          outPre.textContent =
+            `Enter message: ${msg}\n` +
+            `Enter 8-character key: ${key}\n` +
+            `Encrypted message: ${b64}\n` +
+            `Decrypted message: ${msg}`;
+        }
+      } else if (prog.id === 'rsa') {
+        const msg = getVal('msg', 'HELLO');
+        const p = 17, q = 19, n = p * q, phi = (p - 1) * (q - 1), e = 5;
+        let d = 1;
+        while ((d * e) % phi !== 1) d++;
+        const encNums = [];
+        const decChars = [];
+        for (let i = 0; i < msg.length; i++) {
+          const code = msg.charCodeAt(i) & 0xff;
+          const c = modPow(code, e, n);
+          const m = modPow(c, d, n);
+          encNums.push(c);
+          decChars.push(String.fromCharCode(m));
+        }
+        outPre.textContent =
+          `Public Key: {${e}, ${n}}\n` +
+          `Private Key: {${d}, ${n}}\n` +
+          `Enter message: ${msg}\n` +
+          `Encrypted message: ${encNums.join(' ')} \n` +
+          `Decrypted message: ${decChars.join('')}`;
+      } else if (prog.id === 'md5') {
+        const text = getVal('text', 'hello');
+        const md5Hex = computeMD5Hex(text);
+        outPre.textContent =
+          `Enter text: ${text}\n` +
+          `MD5 Hash: ${md5Hex}`;
+      }
+    }
+
+    function renderAllProgramsSheet() {
+      const container = document.getElementById('allProgramsView');
+      const filtered = getFilteredPrograms();
+
+      container.innerHTML = filtered.map((prog) => {
+        const rawCode = state.codeFormat === 'clean' ? prog.cleanCode : prog.exactCode;
+        const lines = rawCode.split('\n');
+        const langBadgeColor = prog.language === 'C'
+          ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+          : 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+
+        return `
+          <div id="all-card-${prog.id}" class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div class="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  Program #${prog.number} (Page ${prog.pdfPage})
+                </span>
+                <h3 class="text-base font-bold text-white">${escapeHtml(prog.title)}</h3>
+                <span class="text-xs font-mono px-2 py-0.5 rounded border ${langBadgeColor}">${prog.language}</span>
+                <span class="text-xs font-mono text-slate-400">${prog.filename}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  data-open-prog="${prog.id}"
+                  class="all-open-sim-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                >
+                  Open in Simulator
+                </button>
+                <button
+                  type="button"
+                  data-copy-prog="${prog.id}"
+                  class="all-copy-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition"
+                >
+                  Copy Code
+                </button>
+              </div>
+            </div>
+            <div class="p-4 bg-slate-950 overflow-x-auto font-mono text-xs sm:text-sm leading-relaxed">
+              ${lines.map((line, idx) => `
+                <div class="flex items-baseline">
+                  ${state.showLineNumbers ? `<span class="w-8 shrink-0 select-none text-right pr-3 text-slate-600 text-xs">${idx + 1}</span>` : ''}
+                  <span class="whitespace-pre text-slate-100">${highlightCodeLine(line) || ' '}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.all-copy-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const p = PROGRAMS.find((item) => item.id === btn.getAttribute('data-copy-prog'));
+          if (p) {
+            const code = state.codeFormat === 'clean' ? p.cleanCode : p.exactCode;
+            copyTextToClipboard(code, `Copied ${p.shortName} code!`);
+          }
+        });
+      });
+
+      container.querySelectorAll('.all-open-sim-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.activeProgramId = btn.getAttribute('data-open-prog');
+          state.viewMode = 'single';
+          updateViewModeButtons();
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    }
+
+    function updateViewModeButtons() {
+      const singleBtn = document.getElementById('viewSingleBtn');
+      const allBtn = document.getElementById('viewAllBtn');
+      if (state.viewMode === 'single') {
+        singleBtn.className = 'px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white shadow transition';
+        allBtn.className = 'px-3 py-1.5 text-xs font-medium rounded-md text-slate-300 hover:text-white transition';
+      } else {
+        allBtn.className = 'px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-600 text-white shadow transition';
+        singleBtn.className = 'px-3 py-1.5 text-xs font-medium rounded-md text-slate-300 hover:text-white transition';
+      }
+    }
+
+    function renderAll() {
+      renderProgressHeader();
+      renderProgramPills();
+      if (getFilteredPrograms().length > 0) {
+        if (state.viewMode === 'single') {
+          renderSingleProgramView();
+        } else {
+          renderAllProgramsSheet();
+        }
+      }
+    }
+
+    // =========================================================================
+    // 5. EVENT LISTENERS & INITIALIZATION
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedProgress();
+
+      // View mode buttons
+      document.getElementById('viewSingleBtn').addEventListener('click', () => {
+        state.viewMode = 'single';
+        updateViewModeButtons();
+        renderAll();
+      });
+
+      document.getElementById('viewAllBtn').addEventListener('click', () => {
+        state.viewMode = 'all';
+        updateViewModeButtons();
+        renderAll();
+      });
+
+      // Language filter buttons
+      document.querySelectorAll('.lang-filter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.langFilter = btn.getAttribute('data-lang');
+          document.querySelectorAll('.lang-filter-btn').forEach((b) => {
+            b.className = 'lang-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+          });
+          btn.className = 'lang-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition';
+          renderAll();
+        });
+      });
+
+      // Search input
+      const searchInput = document.getElementById('searchInput');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      searchInput.addEventListener('input', () => {
+        state.searchQuery = searchInput.value;
+        clearSearchBtn.classList.toggle('hidden', !state.searchQuery);
+        renderAll();
+      });
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        state.searchQuery = '';
+        clearSearchBtn.classList.add('hidden');
+        renderAll();
+      });
+      document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+        searchInput.value = '';
+        state.searchQuery = '';
+        state.langFilter = 'all';
+        clearSearchBtn.classList.add('hidden');
+        document.querySelectorAll('.lang-filter-btn').forEach((b) => {
+          b.className = b.getAttribute('data-lang') === 'all'
+            ? 'lang-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition'
+            : 'lang-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+        });
+        renderAll();
+      });
+
+      // Copy All 6 Programs
+      document.getElementById('copyAllProgramsBtn').addEventListener('click', () => {
+        const combined = PROGRAMS.map((p) => `// ==========================================\n// ${p.number}. ${p.title}\n// ==========================================\n${p.exactCode}`).join('\n\n\n');
+        copyTextToClipboard(combined, 'Copied all 6 lab programs!');
+      });
+
+      // Active Program Actions
+      document.getElementById('markRevisedBtn').addEventListener('click', () => {
+        const id = state.activeProgramId;
+        state.revisedIds[id] = !state.revisedIds[id];
+        saveProgress();
+        renderAll();
+        showToast(state.revisedIds[id] ? 'Marked as revised!' : 'Removed revised mark');
+      });
+
+      document.getElementById('copyActiveCodeBtn').addEventListener('click', () => {
+        const prog = PROGRAMS.find((p) => p.id === state.activeProgramId);
+        if (!prog) return;
+        const code = state.codeFormat === 'clean' ? prog.cleanCode : prog.exactCode;
+        copyTextToClipboard(code, `Copied ${prog.shortName} (${prog.filename})!`);
+      });
+
+      document.getElementById('downloadActiveCodeBtn').addEventListener('click', () => {
+        const prog = PROGRAMS.find((p) => p.id === state.activeProgramId);
+        if (!prog) return;
+        const code = state.codeFormat === 'clean' ? prog.cleanCode : prog.exactCode;
+        downloadSourceFile(prog.filename, code);
+      });
+
+      // Code Format Toggles
+      document.getElementById('fmtExactBtn').addEventListener('click', () => {
+        state.codeFormat = 'exact';
+        renderAll();
+      });
+      document.getElementById('fmtCleanBtn').addEventListener('click', () => {
+        state.codeFormat = 'clean';
+        renderAll();
+      });
+      document.getElementById('fmtPracticeBtn').addEventListener('click', () => {
+        state.codeFormat = 'practice';
+        renderAll();
+      });
+
+      // Line numbers toggle
+      document.getElementById('lineNumbersToggle').addEventListener('change', (e) => {
+        state.showLineNumbers = e.target.checked;
+        renderAll();
+      });
+
+      // Practice Mode Check / Reveal / Reset
+      document.getElementById('checkBlanksBtn').addEventListener('click', () => {
+        const inputs = document.querySelectorAll('#codeDisplayArea .blank-input');
+        let correctCount = 0;
+        inputs.forEach((inp) => {
+          const expected = (inp.getAttribute('data-answer') || '').replace(/\s+/g, '');
+          const actual = (inp.value || '').replace(/\s+/g, '');
+          inp.classList.remove('correct', 'incorrect');
+          if (actual && actual === expected) {
+            inp.classList.add('correct');
+            correctCount++;
+          } else {
+            inp.classList.add('incorrect');
+          }
+        });
+        showToast(`Score: ${correctCount} / ${inputs.length} blanks correct`);
+      });
+
+      document.getElementById('revealBlanksBtn').addEventListener('click', () => {
+        const inputs = document.querySelectorAll('#codeDisplayArea .blank-input');
+        inputs.forEach((inp) => {
+          inp.value = inp.getAttribute('data-answer') || '';
+          inp.classList.remove('incorrect');
+          inp.classList.add('correct');
+        });
+      });
+
+      document.getElementById('resetBlanksBtn').addEventListener('click', () => {
+        const inputs = document.querySelectorAll('#codeDisplayArea .blank-input');
+        inputs.forEach((inp) => {
+          inp.value = '';
+          inp.classList.remove('correct', 'incorrect');
+        });
+      });
+
+      // Prev / Next Program navigation
+      const stepProgram = (delta) => {
+        const filtered = getFilteredPrograms();
+        if (filtered.length === 0) return;
+        const currIdx = filtered.findIndex((p) => p.id === state.activeProgramId);
+        const nextIdx = (currIdx + delta + filtered.length) % filtered.length;
+        state.activeProgramId = filtered[nextIdx].id;
+        renderAll();
+      };
+
+      document.getElementById('prevProgBtn').addEventListener('click', () => stepProgram(-1));
+      document.getElementById('nextProgBtn').addEventListener('click', () => stepProgram(1));
+
+      // Keyboard Left/Right navigation (when not typing in an input)
+      window.addEventListener('keydown', (e) => {
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+        if (state.viewMode !== 'single') return;
+        if (e.key === 'ArrowLeft') stepProgram(-1);
+        if (e.key === 'ArrowRight') stepProgram(1);
+      });
+
+      // Run Simulator Button & Copy Compile Cmd
+      document.getElementById('runSimBtn').addEventListener('click', () => {
+        const prog = PROGRAMS.find((p) => p.id === state.activeProgramId);
+        if (prog) {
+          runSimulationForProgram(prog);
+          showToast(`Simulated ${prog.shortName} output!`);
+        }
+      });
+
+      document.getElementById('copyCompileCmdBtn').addEventListener('click', () => {
+        const prog = PROGRAMS.find((p) => p.id === state.activeProgramId);
+        if (prog) copyTextToClipboard(prog.compileCmd, 'Copied compile & run command!');
+      });
+
+      // Initial render
+      renderAll();
+    });
+  </script>
+</body>
+</html>
